@@ -1,4 +1,4 @@
-# Bluspark OceanOS 🚢
+# Bluspark OceanOS 
 ### Global Ocean Freight Rate Intelligence & Shipment Visibility Platform
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
@@ -11,20 +11,19 @@ An enterprise-grade, high-performance ocean freight rate comparison, shipment mi
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 1. [Executive Overview](#-executive-overview)
 2. [Core Modules](#-core-modules)
 3. [Architecture & Tech Stack](#-architecture--tech-stack)
 4. [Enterprise Design & Color Grading](#-enterprise-design--color-grading)
 5. [Security & Role-Based Access Control](#-security--role-based-access-control)
 6. [Local Quick Start](#-local-quick-start)
-7. [Deploy to Vercel & GitHub](#-deploy-to-vercel--github)
-8. [Project Structure](#-project-structure)
-9. [Presentation Deck & Demo Script](#-presentation-deck--demo-script)
+7. [Project Structure](#-project-structure)
+8. [Presentation Deck & Demo Script](#-presentation-deck--demo-script)
 
 ---
 
-## 🌟 Executive Overview
+## Executive Overview
 
 Global importers and freight forwarders face three persistent operational risks:
 1. **Rate Fragmentation:** Carrier pricing across ports and container types is opaque, leading to unoptimized lane selection and missed procurement savings.
@@ -35,7 +34,7 @@ Global importers and freight forwarders face three persistent operational risks:
 
 ---
 
-## 📦 Core Modules
+## Core Modules
 
 ### 1. Tariff Procurement & Benchmark (Rate Search)
 * **Dynamic Origin ➔ Destination Pairing:** Intelligent port selector dynamically restricts destination choices to valid contracted shipping lanes.
@@ -83,7 +82,7 @@ Global importers and freight forwarders face three persistent operational risks:
 
 ---
 
-## 🎨 Enterprise Design & Color Grading
+## Enterprise Design & Color Grading
 
 * **Command Center Palette:** Deep space navy base (`#060a13`) with multilayered radial glow gradients.
 * **Glassmorphism Panels:** Translucent surface cards with blur filters (`backdrop-filter: blur(20px)`), subtle inner borders, and hover lift effects.
@@ -95,7 +94,7 @@ Global importers and freight forwarders face three persistent operational risks:
 
 ---
 
-## 🔒 Security & Role-Based Access Control
+## Security & Role-Based Access Control
 
 * **Cryptographic Passwords:** Passwords salted with 16-byte random salt and hashed using `PBKDF2-HMAC-SHA256` (100k rounds).
 * **Stateless Session Tokens:** Signed HMAC-SHA256 tokens passed via `Authorization: Bearer <token>` or secure HTTP cookies.
@@ -108,11 +107,11 @@ Global importers and freight forwarders face three persistent operational risks:
 
 ---
 
-## 🚀 Local Quick Start
+## Local Quick Start
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/ocean-freight-tracker.git
+git clone https://github.com/abhirup-s-idea-dump/ocean-freight-tracker.git
 cd ocean-freight-tracker
 ```
 
@@ -129,50 +128,10 @@ python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 ### 4. Access the Application
 * **Dashboard:** [http://127.0.0.1:8000](http://127.0.0.1:8000)
 * **Interactive API Documentation:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-* **Presentation Slide Deck:** [http://127.0.0.1:8000/presentation](http://127.0.0.1:8000/presentation)
 
 ---
 
-## ☁️ Deploy to Vercel & GitHub
-
-The project is pre-configured with `vercel.json` and `api/index.py` for immediate deployment.
-
-### Method 1: Push to GitHub & Connect with Vercel (Recommended)
-
-1. **Initialize Git & Commit:**
-   ```bash
-   git init
-   git add .
-   git commit -m "feat: complete Bluspark OceanOS platform with Vercel deployment support"
-   ```
-
-2. **Create a new GitHub Repository:**
-   * Go to [GitHub](https://github.com/new) and create a repository named `ocean-freight-tracker`.
-
-3. **Push your code to GitHub:**
-   ```bash
-   git remote add origin https://github.com/YOUR_USERNAME/ocean-freight-tracker.git
-   git branch -M main
-   git push -u origin main
-   ```
-
-4. **Deploy on Vercel:**
-   * Go to [Vercel Dashboard](https://vercel.com/dashboard).
-   * Click **"Add New"** ➔ **"Project"**.
-   * Import your `ocean-freight-tracker` repository.
-   * Vercel will auto-detect Python settings via `vercel.json` and deploy your app instantly!
-
-### Method 2: Deploy directly via Vercel CLI
-
-```bash
-npm i -g vercel
-vercel
-```
-Follow the interactive prompts to deploy to preview or production (`vercel --prod`).
-
----
-
-## 📂 Project Structure
+## Project Structure
 
 ```
 ocean-freight-tracker/
@@ -204,7 +163,7 @@ ocean-freight-tracker/
 
 ---
 
-## 🏆 Presentation Deck & Demo Script
+## Presentation Deck & Demo Script
 
 * **Interactive Slide Deck:** Served directly at `/presentation` or open `presentation/slides.html`.
 * **Speaker Script:** See `presentation/presentation_notes.md` for the exact minute-by-minute speaking walkthrough.
