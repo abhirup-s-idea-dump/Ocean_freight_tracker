@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluspark OceanOS | Maritime Operations Intelligence</title>
+    <meta name="description" content="Enterprise ocean freight rate benchmarking, shipment tracking, invoice audit & carrier dispatch ingestion platform">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfeff',
+                            100: '#cffafe',
+                            200: '#a5f3fc',
+                            300: '#67e8f9',
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            700: '#0e7490',
+                            800: '#155e75',
+                            900: '#164e63',
+                            950: '#083344',
+                        },
+                        ocean: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                        },
+                        surface: {
+                            base: '#060a13',
+                            card: '#0a1120',
+                            elevated: '#0d1526',
+                            overlay: '#0f1a2e',
+                        }
+                    },
+                    fontSize: {
+                        '3xs': '0.625rem',
+                        '2xs': '0.6875rem',
+                    },
+                    boxShadow: {
+                        'glow-sm': '0 0 15px -3px rgba(14, 165, 233, 0.15)',
+                        'glow-md': '0 0 25px -5px rgba(14, 165, 233, 0.25)',
+                        'glow-lg': '0 4px 40px -8px rgba(14, 165, 233, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚢</text></svg>">
+</head>
+<body class="bg-surface-base text-slate-100 min-h-screen flex flex-col antialiased">
+
+    <!-- ================================================================= -->
+    <!-- DEDICATED LOGIN & REGISTRATION PORTAL (APPEARS FIRST)             -->
+    <!-- ================================================================= -->
+    <div id="login-screen" class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <!-- Ambient background gradients -->
+        <div class="absolute -top-32 -left-32 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="w-full max-w-md relative z-10">
+            <!-- Brand Logo & Header -->
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-xl shadow-sky-500/30 text-3xl mb-4 animate-pulse-glow">
+                    <i class="fa-solid fa-ship"></i>
+                </div>
+                <h1 class="text-2xl font-extrabold text-white tracking-tight">Bluspark <span class="text-gradient-ocean font-light">OceanOS</span></h1>
+                <p class="text-xs text-slate-400 mt-1 font-medium">Enterprise Freight Intelligence & Maritime Governance</p>
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-300 text-3xs font-semibold border border-cyan-500/20 mt-2.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Identity & Access Management Portal
+                </div>
+            </div>
+
+            <!-- Card Container -->
+            <div class="glass-panel rounded-2xl border border-white/[0.08] p-6 sm:p-8 shadow-2xl backdrop-blur-2xl">
+                <!-- Tab Mode Toggle -->
+                <div class="flex items-center p-1 rounded-xl bg-slate-900/90 border border-white/[0.06] mb-6">
+                    <button type="button" id="auth-tab-login" onclick="switchAuthMode('login')" class="flex-1 py-2 text-xs font-bold rounded-lg text-white bg-sky-500 transition shadow-sm">
+                        <i class="fa-solid fa-right-to-bracket mr-1.5"></i> Sign In
+                    </button>
+                    <button type="button" id="auth-tab-register" onclick="switchAuthMode('register')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+                        <i class="fa-solid fa-user-plus mr-1.5"></i> Register Account
+                    </button>
+                </div>
+
+                <!-- 1. SIGN IN FORM -->
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Corporate Username</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                            <input type="text" id="login-username" required placeholder="admin or user" class="w-full bg-slate-900/90 border border-white/[0.08] rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-xs font-semibold text-slate-300">Password</label>
+                            <span class="text-3xs text-slate-500 font-mono">PBKDF2-HMAC-SHA256</span>
+                        </div>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                            <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-900/90 border border-white/[0.08] rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+                        </div>
+                    </div>
+
+                    <div id="login-error-msg" class="text-xs text-rose-400 text-center hidden py-1.5 px-2 bg-rose-950/40 border border-rose-800/40 rounded-lg"></div>
+
+                    <button type="submit" id="login-submit-btn" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Dashboard
+                    </button>
+
+                    <!-- Evaluation Pre-Seeded Profiles -->
+                    <div class="pt-4 border-t border-white/[0.06] text-center">
+                        <div class="text-3xs text-slate-400 uppercase tracking-wider font-semibold mb-2">Pre-Seeded Evaluation Profiles</div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <button type="button" onclick="fillAndLogin('admin', 'admin123')" class="p-2.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/60 border border-purple-800/50 text-purple-200 transition text-left cursor-pointer">
+                                <div class="font-bold flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-400"></span> Director (Admin)</div>
+                                <div class="text-3xs font-mono text-purple-300/80 mt-0.5">admin / admin123</div>
+                            </button>
+                            <button type="button" onclick="fillAndLogin('user', 'user123')" class="p-2.5 rounded-xl bg-sky-950/40 hover:bg-sky-900/60 border border-sky-800/50 text-sky-200 transition text-left cursor-pointer">
+                                <div class="font-bold flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-sky-400"></span> Specialist (User)</div>
+                                <div class="text-3xs font-mono text-sky-300/80 mt-0.5">user / user123</div>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- 2. REGISTER FORM (STORE CREDENTIALS) -->
+                <form id="register-form" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Full Name</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-id-card absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                            <input type="text" id="reg-fullname" required placeholder="e.g. Captain James Vance" class="w-full bg-slate-900/90 border border-white/[0.08] rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Corporate Username</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                            <input type="text" id="reg-username" required placeholder="e.g. jvance" class="w-full bg-slate-900/90 border border-white/[0.08] rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                            <input type="password" id="reg-password" required placeholder="Minimum 4 characters" class="w-full bg-slate-900/90 border border-white/[0.08] rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Corporate Role Authorization</label>
+                        <select id="reg-role" class="w-full bg-slate-900/90 border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:border-cyan-500">
+                            <option value="user">Specialist (User) — Standard Operations</option>
+                            <option value="admin">Director (Admin) — Tariff & Fleet Governance</option>
+                        </select>
+                    </div>
+
+                    <div id="register-error-msg" class="text-xs text-rose-400 text-center hidden py-1.5 px-2 bg-rose-950/40 border border-rose-800/40 rounded-lg"></div>
+
+                    <button type="submit" id="register-submit-btn" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Store Credentials & Sign In
+                    </button>
+                </form>
+            </div>
+
+            <!-- Footer Details -->
+            <div class="text-center mt-6 text-3xs text-slate-500">
+                <span>ISO 27001 Certified • SOC-2 Type II Compliant • 100k PBKDF2 Rounds</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MAIN APPLICATION WORKSPACE (REVEALED UPON AUTHENTICATION)         -->
+    <!-- ================================================================= -->
+    <div id="app-workspace" class="hidden flex-col min-h-screen">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-white/[0.06] bg-surface-card/90 backdrop-blur-2xl sticky top-0 z-40">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 via-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/25 animate-pulse-glow">
+                    <i class="fa-solid fa-ship text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold tracking-tight text-white text-base sm:text-lg">Bluspark <span class="text-gradient-ocean font-light">OceanOS</span></span>
+                        <span class="text-3xs px-2 py-0.5 rounded-full font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 backdrop-blur-sm">Enterprise</span>
+                    </div>
+                    <p class="text-3xs text-slate-500 tracking-wider font-medium uppercase">Maritime Intelligence & Cost Governance</p>
+                </div>
+            </div>
+
+            <!-- Auth & User Controls -->
+            <div id="auth-header-container" class="flex items-center gap-3">
+                <!-- Dynamically populated by JS -->
+            </div>
+        </div>
+
+        <!-- Enterprise Navigation Tabs -->
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 border-t border-white/[0.04] flex items-center gap-1 overflow-x-auto py-1.5 scrollbar-none">
+            <button onclick="switchTab('overview')" id="nav-overview" class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border-b-2 bg-sky-500/10 text-sky-400 border-sky-500 transition whitespace-nowrap">
+                <i class="fa-solid fa-chart-line"></i> Overview
+            </button>
+            <button onclick="switchTab('rates')" id="nav-rates" class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border-b-2 text-slate-400 border-transparent hover:text-slate-200 transition whitespace-nowrap">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> Rate Search
+            </button>
+            <button onclick="switchTab('shipments')" id="nav-shipments" class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border-b-2 text-slate-400 border-transparent hover:text-slate-200 transition whitespace-nowrap">
+                <i class="fa-solid fa-compass"></i> Shipment Tracker
+            </button>
+            <button onclick="switchTab('invoices')" id="nav-invoices" class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border-b-2 text-slate-400 border-transparent hover:text-slate-200 transition whitespace-nowrap">
+                <i class="fa-solid fa-shield-halved"></i> Invoice Audit
+            </button>
+            <button onclick="switchTab('emails')" id="nav-emails" class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border-b-2 text-slate-400 border-transparent hover:text-slate-200 transition whitespace-nowrap">
+                <i class="fa-solid fa-envelope-open-text"></i> Email Ingestion
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ================================================================= -->
+        <!-- TAB 0: EXECUTIVE OVERVIEW                                         -->
+        <!-- ================================================================= -->
+        <div id="tab-overview" class="tab-content space-y-6">
+            <!-- Strategic Overview Banner -->
+            <div class="glass-panel p-6 sm:p-8 rounded-2xl relative overflow-hidden border border-white/[0.06]" style="background: linear-gradient(135deg, rgba(6,182,212,0.06) 0%, rgba(10,17,32,0.95) 40%, rgba(99,102,241,0.04) 100%);">
+                <div class="absolute -right-8 -bottom-10 opacity-[0.04] text-cyan-400 text-9xl pointer-events-none">
+                    <i class="fa-solid fa-globe"></i>
+                </div>
+                <!-- Decorative gradient orb -->
+                <div class="absolute top-0 left-1/3 w-96 h-96 bg-sky-500/[0.03] rounded-full blur-3xl pointer-events-none"></div>
+                <div class="max-w-2xl relative z-10">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            System Online — All Services Healthy
+                        </span>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white mt-3 leading-tight tracking-tight">
+                        Ocean Freight Operations <span class="text-gradient-ocean">Command Center</span>
+                    </h1>
+                    <p class="text-slate-400 text-sm mt-2 leading-relaxed">
+                        Real-time rate benchmarking, shipment visibility, automated invoice auditing, and intelligent email parsing — all in one unified platform.
+                    </p>
+                    <div class="flex flex-wrap items-center gap-3 mt-5">
+                        <button onclick="switchTab('rates')" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-sky-500/20 flex items-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass"></i> Search Rates
+                        </button>
+                        <button onclick="switchTab('shipments')" class="px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white font-semibold text-xs border border-white/[0.08] transition flex items-center gap-2 backdrop-blur-sm">
+                            <i class="fa-solid fa-compass text-sky-400"></i> Track Shipments
+                        </button>
+                        <button onclick="openModal('add-shipment-modal')" class="px-4 py-2.5 rounded-xl bg-indigo-600/80 hover:bg-indigo-500 text-white font-semibold text-xs transition flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> New Shipment
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Executive Metric KPI Counters -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div class="glass-panel glass-panel-hover p-4 rounded-xl border border-white/[0.06] group cursor-default">
+                    <div class="flex items-center justify-between text-slate-500 text-xs">
+                        <span class="font-medium">Total Shipments</span>
+                        <div class="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center">
+                            <i class="fa-solid fa-boxes-stacked text-sky-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div id="stat-total-shipments" class="text-2xl font-extrabold text-white mt-1.5 font-mono tracking-tight">20</div>
+                    <div class="text-3xs text-slate-500 mt-1">Across 5 carriers</div>
+                </div>
+
+                <div class="glass-panel glass-panel-hover p-4 rounded-xl border border-white/[0.06] group cursor-default">
+                    <div class="flex items-center justify-between text-slate-500 text-xs">
+                        <span class="font-medium">In Transit</span>
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                            <i class="fa-solid fa-route text-amber-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div id="stat-intransit" class="text-2xl font-extrabold text-amber-400 mt-1.5 font-mono tracking-tight">11</div>
+                    <div class="text-3xs text-slate-500 mt-1">Currently on water</div>
+                </div>
+
+                <div class="glass-panel glass-panel-hover p-4 rounded-xl border border-white/[0.06] group cursor-default">
+                    <div class="flex items-center justify-between text-slate-500 text-xs">
+                        <span class="font-medium">Delayed</span>
+                        <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div id="stat-delayed" class="text-2xl font-extrabold text-rose-400 mt-1.5 font-mono tracking-tight">3</div>
+                    <div class="text-3xs text-rose-400/60 mt-1">Schedule exceptions</div>
+                </div>
+
+                <div class="glass-panel glass-panel-hover p-4 rounded-xl border border-white/[0.06] group cursor-default">
+                    <div class="flex items-center justify-between text-slate-500 text-xs">
+                        <span class="font-medium">Delivered</span>
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                            <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div id="stat-delivered" class="text-2xl font-extrabold text-emerald-400 mt-1.5 font-mono tracking-tight">6</div>
+                    <div class="text-3xs text-slate-500 mt-1">Successfully discharged</div>
+                </div>
+
+                <div class="glass-panel glass-panel-hover p-4 rounded-xl border border-white/[0.06] col-span-2 sm:col-span-1 group cursor-default">
+                    <div class="flex items-center justify-between text-slate-500 text-xs">
+                        <span class="font-medium">Overcharges Found</span>
+                        <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                            <i class="fa-solid fa-file-invoice-dollar text-rose-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div id="stat-overcharges" class="text-2xl font-extrabold text-rose-400 mt-1.5 font-mono tracking-tight">$745</div>
+                    <div class="text-3xs text-rose-400/60 mt-1">Recoverable amount</div>
+                </div>
+            </div>
+
+            <!-- Visualization & Module Fast Launchers -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Status Distribution Chart -->
+                <div class="glass-panel p-5 rounded-2xl border border-white/[0.06] flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-chart-pie text-cyan-400"></i> Fleet Consignment Status
+                            </h3>
+                            <span class="text-3xs px-2 py-0.5 rounded bg-slate-800/80 text-cyan-300 font-mono border border-cyan-500/20">Live Sync</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">Real-time status breakdown across all active ocean containers.</p>
+                    </div>
+                    <div class="h-56 relative my-4 flex items-center justify-center">
+                        <canvas id="shipmentStatusChart"></canvas>
+                    </div>
+                    <div class="pt-3 border-t border-white/[0.06] text-3xs text-slate-400 flex justify-between">
+                        <span>Rule: Past ETA without discharge = Delayed</span>
+                        <span class="text-cyan-400 cursor-pointer hover:underline font-semibold" onclick="switchTab('shipments')">View Fleet Tracking →</span>
+                    </div>
+                </div>
+
+                <!-- Enterprise Operations Cards -->
+                <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="glass-panel glass-panel-hover p-5 rounded-2xl border border-white/[0.06] cursor-pointer" onclick="switchTab('rates')">
+                        <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg mb-3">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                        <h4 class="font-bold text-white text-sm">Tariff Procurement Engine</h4>
+                        <p class="text-xs text-slate-400 mt-1">Dynamic lane comparison across contracted carriers with optimal rate recommendations and transit benchmarks.</p>
+                        <div class="text-3xs text-sky-400 font-semibold mt-3 flex items-center gap-1">Open Procurement Console <i class="fa-solid fa-arrow-right"></i></div>
+                    </div>
+
+                    <div class="glass-panel glass-panel-hover p-5 rounded-2xl border border-white/[0.06] cursor-pointer" onclick="switchTab('shipments')">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg mb-3">
+                            <i class="fa-solid fa-radar"></i>
+                        </div>
+                        <h4 class="font-bold text-white text-sm">Fleet Milestone Monitoring</h4>
+                        <p class="text-xs text-slate-400 mt-1">End-to-end voyage tracking, arrival schedules, delay anomaly alerts, and full CSV/Excel audit data streaming.</p>
+                        <div class="text-3xs text-amber-400 font-semibold mt-3 flex items-center gap-1">Open Fleet Tracker <i class="fa-solid fa-arrow-right"></i></div>
+                    </div>
+
+                    <div class="glass-panel glass-panel-hover p-5 rounded-2xl border border-white/[0.06] cursor-pointer" onclick="switchTab('invoices')">
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-lg mb-3">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                        </div>
+                        <h4 class="font-bold text-white text-sm">Freight Invoice Audit & Recovery</h4>
+                        <p class="text-xs text-slate-400 mt-1">Automatic verification of carrier invoices against contracted tariffs to detect and dispute erroneous billing overcharges.</p>
+                        <div class="text-3xs text-rose-400 font-semibold mt-3 flex items-center gap-1">Open Audit Portal <i class="fa-solid fa-arrow-right"></i></div>
+                    </div>
+
+                    <div class="glass-panel glass-panel-hover p-5 rounded-2xl border border-white/[0.06] cursor-pointer" onclick="switchTab('emails')">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-lg mb-3">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h4 class="font-bold text-white text-sm">Autonomous Dispatch Ingestion</h4>
+                        <p class="text-xs text-slate-400 mt-1">Intelligent NLP parser extracting tariff revisions and terminal exceptions from raw carrier advisories without manual re-keying.</p>
+                        <div class="text-3xs text-purple-400 font-semibold mt-3 flex items-center gap-1">Open Dispatch Feed Console <i class="fa-solid fa-arrow-right"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================================================================= -->
+        <!-- TAB 1: TARIFF PROCUREMENT & BENCHMARK                             -->
+        <!-- ================================================================= -->
+        <div id="tab-rates" class="tab-content hidden space-y-6">
+            <!-- Search Query Box -->
+            <div class="glass-panel p-6 rounded-2xl border border-white/[0.06]">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/[0.06] gap-2">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass-chart text-cyan-400"></i> Ocean Tariff Procurement & Carrier Benchmark
+                        </h2>
+                        <p class="text-xs text-slate-400">Query master contracted rates across origin and destination ports by container specification.</p>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="text-slate-400">Sort criteria:</span>
+                        <select id="search-sort" class="bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1 text-slate-200 text-xs focus:ring-1 focus:ring-cyan-500">
+                            <option value="price">Lowest Landed Freight ($ USD)</option>
+                            <option value="transit">Fastest Ocean Transit (Days)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
+                    <!-- Origin Port -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Origin Port</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-anchor absolute left-3 top-3 text-slate-500 text-xs"></i>
+                            <select id="search-origin" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:ring-1 focus:ring-sky-500">
+                                <!-- Loaded via JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Destination Port -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Destination Port</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-location-dot absolute left-3 top-3 text-slate-500 text-xs"></i>
+                            <select id="search-dest" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:ring-1 focus:ring-sky-500">
+                                <!-- Loaded via JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Container Type -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Container Type</label>
+                        <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-xl p-1">
+                            <label class="flex-1 text-center py-1.5 rounded-lg text-xs font-semibold cursor-pointer has-[:checked]:bg-sky-500 has-[:checked]:text-slate-950 text-slate-300 transition">
+                                <input type="radio" name="search-container" value="20ft" checked class="hidden"> 20ft Standard
+                            </label>
+                            <label class="flex-1 text-center py-1.5 rounded-lg text-xs font-semibold cursor-pointer has-[:checked]:bg-sky-500 has-[:checked]:text-slate-950 text-slate-300 transition">
+                                <input type="radio" name="search-container" value="40ft" class="hidden"> 40ft High Cube
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Search Button -->
+                    <div class="flex items-end">
+                        <button id="rates-search-btn" class="w-full py-2.5 px-4 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm transition shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass"></i> Query Contract Tariffs
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rate Results Section -->
+            <div id="rates-results-container">
+                <!-- Dynamically populated by renderRateResults -->
+            </div>
+        </div>
+
+
+        <!-- ================================================================= -->
+        <!-- TAB 2: FLEET & CONSIGNMENT TRACKING                               -->
+        <!-- ================================================================= -->
+        <div id="tab-shipments" class="tab-content hidden space-y-6">
+            <!-- Top Controls Bar -->
+            <div class="glass-panel p-5 rounded-2xl border border-white/[0.06]">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-compass text-sky-400"></i> Fleet Consignment & Voyage Tracker
+                            </h2>
+                            <span id="shipment-count-badge" class="px-2 py-0.5 rounded text-xs font-mono font-semibold bg-slate-800 text-sky-300 border border-slate-700">
+                                20 Consignments
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-0.5">Real-time voyage progress, port clearance milestones, and dynamic schedule deviation detection.</p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openModal('add-shipment-modal')" class="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition flex items-center gap-2 shadow-md shadow-sky-500/20">
+                            <i class="fa-solid fa-plus"></i> Register Consignment
+                        </button>
+                        <button onclick="exportShipmentsCSV()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition flex items-center gap-2" title="Export complete audit dataset to CSV">
+                            <i class="fa-solid fa-file-arrow-down text-emerald-400"></i> Export Audit Dataset (.CSV)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters & Search -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-4 border-t border-white/[0.06]">
+                    <div>
+                        <label class="block text-3xs uppercase font-semibold text-slate-400 mb-1">Voyage Status Filter</label>
+                        <select id="shipment-status-filter" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200">
+                            <option value="all">All Operational Statuses</option>
+                            <option value="In Transit">On-Water Transit Only</option>
+                            <option value="Delayed">Schedule Exception / Delayed Only</option>
+                            <option value="Delivered">Port Discharged Only</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-3xs uppercase font-semibold text-slate-400 mb-1">Contract Carrier Filter</label>
+                        <select id="shipment-carrier-filter" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200">
+                            <option value="all">All Contract Carriers</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-3xs uppercase font-semibold text-slate-400 mb-1">Search Consignment or Port</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-search absolute left-2.5 top-2 text-slate-500 text-xs"></i>
+                            <input type="text" id="shipment-search-input" placeholder="e.g. SHP1001, Mundra, Los Angeles..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-7 pr-3 py-1.5 text-xs text-slate-200">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipments Table -->
+            <div class="glass-panel rounded-2xl overflow-hidden border border-white/[0.06]">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-900/90 text-xs uppercase text-slate-400 font-medium border-b border-white/[0.06]">
+                            <tr>
+                                <th class="py-3 px-4">Consignment ID</th>
+                                <th class="py-3 px-4">Liner Carrier</th>
+                                <th class="py-3 px-4">Port Lane (Origin ➔ Destination)</th>
+                                <th class="py-3 px-4">ETD (Departure)</th>
+                                <th class="py-3 px-4">ETA (Scheduled Arrival)</th>
+                                <th class="py-3 px-4">Voyage Status</th>
+                                <th class="py-3 px-4">Invoice Audit</th>
+                                <th class="py-3 px-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shipments-table-body" class="divide-y divide-slate-800/60 text-xs">
+                            <!-- Populated via renderShipmentsTable -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================================================================= -->
+        <!-- TAB 3: FREIGHT INVOICE AUDIT                                      -->
+        <!-- ================================================================= -->
+        <div id="tab-invoices" class="tab-content hidden space-y-6">
+            <!-- Single Invoice Verification Box -->
+            <div class="glass-panel p-6 rounded-2xl border border-white/[0.06]">
+                <div class="pb-4 border-b border-white/[0.06]">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-rose-400"></i> Freight Invoice Audit & Overcharge Recovery
+                    </h2>
+                    <p class="text-xs text-slate-400">Reconcile carrier freight billing against master contracted service tariffs to eliminate invoice discrepancies.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5">
+                    <!-- Shipment Selector -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Select Consignment Reference</label>
+                        <select id="invoice-shipment-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:border-rose-500">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+
+                    <!-- Invoiced Amount Input -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Carrier Invoiced Amount ($ USD)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2 text-slate-400 text-xs font-bold">$</span>
+                            <input type="number" id="invoice-amount-input" step="10" placeholder="e.g. 4200" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-7 pr-3 py-2 text-xs font-mono text-slate-100 focus:border-rose-500">
+                        </div>
+                    </div>
+
+                    <!-- Verify Button -->
+                    <div class="flex items-end">
+                        <button id="verify-invoice-btn" class="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-scale-balanced"></i> Execute Contract Reconciliation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Verdict Result Display Card -->
+                <div id="invoice-result-card" class="mt-5 hidden">
+                    <!-- Populated by renderInvoiceVerdict -->
+                </div>
+            </div>
+
+            <!-- Bulk Audit Table for Sample Shipments -->
+            <div class="glass-panel rounded-2xl overflow-hidden border border-white/[0.06]">
+                <div class="px-5 py-4 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-clipboard-check text-sky-400"></i> Master Fleet Tariff Reconciliation Summary
+                        </h4>
+                        <p class="text-3xs text-slate-400">Automated pre-payment audit across all active fleet consignments.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs text-slate-400">Identified Overcharge Leakage:</span>
+                        <div id="total-overcharge-badge" class="px-3 py-1 rounded-lg bg-rose-950/70 border border-rose-800 text-xs font-mono">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-900/90 text-xs uppercase text-slate-400 font-medium border-b border-white/[0.06]">
+                            <tr>
+                                <th class="py-3 px-4">Consignment ID</th>
+                                <th class="py-3 px-4">Carrier</th>
+                                <th class="py-3 px-4">Port Lane</th>
+                                <th class="py-3 px-4">Contract Tariff</th>
+                                <th class="py-3 px-4">Billed Amount</th>
+                                <th class="py-3 px-4">Discrepancy Variance</th>
+                                <th class="py-3 px-4">Audit Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-table-body" class="divide-y divide-slate-800/60 text-xs">
+                            <!-- Populated via runInvoiceAudit -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================================================================= -->
+        <!-- TAB 4: CARRIER DISPATCH INGESTION                                 -->
+        <!-- ================================================================= -->
+        <div id="tab-emails" class="tab-content hidden space-y-6">
+            <!-- Header & Actions -->
+            <div class="glass-panel p-6 rounded-2xl border border-white/[0.06]">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/[0.06]">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-network-wired text-purple-400"></i> Autonomous Carrier Dispatch & EDI Ingestion Engine
+                            </h2>
+                            <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-purple-900/60 text-purple-300 border border-purple-700">
+                                14 Inbound Feeds
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Extracts tariff revisions and vessel milestones from unstructured carrier communications. Automatically isolates marketing circulars and out-of-office advisories without operational interruption.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button id="parse-all-btn" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs transition shadow-lg shadow-purple-600/25 flex items-center gap-2">
+                            <i class="fa-solid fa-bolt"></i> Ingest All Inbound Feeds (14 Messages)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feed Breakdown Pillars -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 text-xs">
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-white/[0.06] flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold text-sm">5</div>
+                        <div>
+                            <div class="font-bold text-slate-200">Tariff Revisions Ingested</div>
+                            <div class="text-3xs text-slate-400">Updates master liner contract rates</div>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-white/[0.06] flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold text-sm">5</div>
+                        <div>
+                            <div class="font-bold text-slate-200">Voyage Milestone Advisories</div>
+                            <div class="text-3xs text-slate-400">Delivered, Terminal Congestion Delays</div>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-white/[0.06] flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center font-bold text-sm">4</div>
+                        <div>
+                            <div class="font-bold text-slate-200">Non-Operational Broadcasts</div>
+                            <div class="text-3xs text-slate-400">Newsletters & Auto-replies safely filtered</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parsing Results Summary Card (Shown after running batch parser) -->
+            <div id="parsing-results-container" class="hidden">
+                <!-- Dynamically populated by renderParsingLog -->
+            </div>
+
+            <!-- Custom Email Playground / Live Parser -->
+            <div class="glass-panel p-6 rounded-2xl border border-white/[0.06]">
+                <h3 class="font-bold text-white text-sm flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-terminal text-sky-400"></i> Dispatch Payload Sandbox
+                </h3>
+                <p class="text-xs text-slate-400 mb-3">Simulate inbound plain-text dispatch messages to test real-time entity extraction.</p>
+
+                <textarea id="custom-email-input" rows="4" placeholder="From: pricing@oceanlinklines.com&#10;Subject: Rate Revision Nhava Sheva to Los Angeles&#10;&#10;Please note our new 20ft rate for Nhava Sheva to Los Angeles is USD 2350." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-200 focus:border-sky-500 focus:ring-1 focus:ring-sky-500"></textarea>
+
+                <div class="flex items-center justify-between mt-3">
+                    <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                        <input type="checkbox" id="custom-apply-db" class="rounded bg-slate-900 border-slate-700 text-sky-500">
+                        <span>Commit extracted parameters directly to master database</span>
+                    </label>
+                    <button id="test-custom-email-btn" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition flex items-center gap-2">
+                        <i class="fa-solid fa-play"></i> Extract & Verify
+                    </button>
+                </div>
+
+                <div id="custom-email-output" class="mt-4 hidden">
+                    <!-- Populated via testCustomEmail -->
+                </div>
+            </div>
+
+            <!-- Inbound Dispatch Feed List -->
+            <div>
+                <h4 class="font-bold text-white text-sm mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-inbox text-purple-400"></i> Inbound Carrier Advisory Feeds
+                </h4>
+                <div id="inbox-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Populated via loadInbox -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Professional Corporate Footer -->
+    <footer class="border-t border-white/[0.06] bg-[#060c18] py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div>
+                © 2026 Bluspark Global Logistics Technologies. Ocean Freight Intelligence Platform.
+            </div>
+            <div class="flex items-center gap-4 text-slate-400">
+                <span>ISO 27001 Certified</span>
+                <span>•</span>
+                <span>SOC-2 Type II Compliant</span>
+                <span>•</span>
+                <a href="/docs" target="_blank" class="hover:text-sky-400">API Documentation</a>
+            </div>
+        </div>
+    </footer>
+    </div><!-- End #app-workspace -->
+
+
+    <!-- ================================================================= -->
+    <!-- ACTION MODALS                                                     -->
+    <!-- ================================================================= -->
+
+    <!-- Register Consignment Modal -->
+    <div id="add-shipment-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl border border-slate-700 p-6 shadow-2xl">
+            <div class="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+                <h3 class="font-bold text-white text-base flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-sky-400"></i> Register Ocean Consignment
+                </h3>
+                <button onclick="closeModal('add-shipment-modal')" class="text-slate-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="add-shipment-form" class="space-y-4 mt-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Consignment ID / B/L</label>
+                        <input type="text" id="modal-shipment-id" required placeholder="SHP1021" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-100">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Liner Carrier</label>
+                        <select id="modal-carrier" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Origin Port</label>
+                        <select id="modal-origin" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Destination Port</label>
+                        <select id="modal-dest" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Container Type</label>
+                        <select id="modal-container" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100">
+                            <option value="20ft">20ft Standard</option>
+                            <option value="40ft">40ft High Cube</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Provisional Invoice ($ USD)</label>
+                        <input type="number" id="modal-invoice" step="10" placeholder="e.g. 2500" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-100">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Vessel Departure (ETD)</label>
+                        <input type="date" id="modal-departure" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-100">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Scheduled Arrival (ETA)</label>
+                        <input type="date" id="modal-expected" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-100">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-white/[0.06]">
+                    <button type="button" onclick="closeModal('add-shipment-modal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold transition">
+                        Register Consignment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Carrier Feed Detail Modal -->
+    <div id="email-detail-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-xl rounded-2xl border border-slate-700 p-6 shadow-2xl max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+                <h3 id="email-detail-title" class="font-bold text-white text-sm truncate max-w-md"></h3>
+                <button onclick="closeModal('email-detail-modal')" class="text-slate-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="overflow-y-auto space-y-4 py-3 flex-1 text-xs">
+                <div id="email-detail-headers" class="bg-slate-900 p-3 rounded-xl border border-white/[0.06]"></div>
+
+                <div>
+                    <div class="font-semibold text-slate-300 mb-1">Raw Inbound Advisory Payload:</div>
+                    <pre id="email-detail-body" class="bg-slate-950 p-3 rounded-xl border border-white/[0.06] font-mono text-3xs text-slate-300 whitespace-pre-wrap"></pre>
+                </div>
+
+                <div>
+                    <div class="font-semibold text-slate-300 mb-1">Normalized Extraction Parameters (JSON):</div>
+                    <pre id="email-detail-json" class="bg-slate-950 p-3 rounded-xl border border-white/[0.06] font-mono text-3xs text-sky-400 whitespace-pre-wrap"></pre>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-white/[0.06] flex justify-end">
+                <button onclick="closeModal('email-detail-modal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-200 text-xs font-semibold">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Script -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
