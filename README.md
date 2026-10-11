@@ -19,7 +19,6 @@ An enterprise-grade, high-performance ocean freight rate comparison, shipment mi
 5. [Security & Role-Based Access Control](#-security--role-based-access-control)
 6. [Local Quick Start](#-local-quick-start)
 7. [Project Structure](#-project-structure)
-8. [Presentation Deck & Demo Script](#-presentation-deck--demo-script)
 
 ---
 
@@ -160,15 +159,6 @@ ocean-freight-tracker/
 └── templates/
     └── index.html             # Main dashboard template
 ```
-
----
-
-## Presentation Deck & Demo Script
-
-* **Interactive Slide Deck:** Served directly at `/presentation` or open `presentation/slides.html`.
-* **Speaker Script:** See `presentation/presentation_notes.md` for the exact minute-by-minute speaking walkthrough.
-
----
 
 ### License & Compliance
 Built with ISO 27001 & SOC-2 compliance principles. Dual currency exchange rates updated daily against RBI reference indices.
